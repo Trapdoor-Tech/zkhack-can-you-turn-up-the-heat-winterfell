@@ -13,7 +13,7 @@ use utils::collections::Vec;
 pub struct DeepComposer<A: Air, E: FieldElement + From<A::BaseField>> {
     field_extension: FieldExtension,
     cc: DeepCompositionCoefficients<E>,
-    x_coordinates: Vec<A::BaseField>,
+    pub x_coordinates: Vec<A::BaseField>,
     z: E,
     next_z: E,
 }

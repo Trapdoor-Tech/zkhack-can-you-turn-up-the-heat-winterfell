@@ -376,6 +376,20 @@ pub trait Prover {
         let c_composition = deep_composer.compose_constraints(composed_evaluations, ood_evaluations);
         let deep_evaluations = deep_composer.combine_compositions(t_composition, c_composition);
 
+        let mut fake_ld_evaluations: Vec<E> = vec![E::ZERO; 16];
+        fake_ld_evaluations.clone_from_slice(&deep_evaluations[0..16]);
+        let twiddles = math::fft::get_twiddles::<E::BaseField>(fake_ld_evaluations.len());
+        let inv_twiddles = math::fft::get_inv_twiddles(fake_ld_evaluations.len());
+
+        math::fft::interpolate_poly_with_offset(&mut fake_ld_evaluations, &inv_twiddles, air.domain_offset());
+        let mut fake_evaluations: Vec<E> = Vec::new();
+        for i in 0..deep_evaluations.len() {
+            let eval = math::polynom::eval(&fake_ld_evaluations[..], deep_composer.x_coordinates[i].into());
+            fake_evaluations.push(eval);
+        }
+
+        let deep_evaluations = fake_evaluations;
+
         #[cfg(feature = "std")]
         let now = Instant::now();
         //let deep_evaluations = deep_composition_poly.evaluate(&domain);
